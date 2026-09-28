@@ -1,0 +1,14 @@
+/*
+ * Tailwind utilities for this microfrontend.
+ *
+ * A remote's *global* styles (styles.scss / tailwind.css) are NOT loaded when it runs inside the shell –
+ * only component styles travel with the exposed code. So the entry component carries its own utilities
+ * (ViewEncapsulation.None). The shell never needs to know which classes a remote uses, which keeps
+ * deployments independent.
+ */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
+@import '../../../../../libs/shared/ui/src/styles/tailwind-theme.css';
+@source '../';
+@source '../../../../../libs/shared';

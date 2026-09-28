@@ -1,0 +1,12 @@
+node_modules
+dist
+tmp
+coverage
+.nx/cache
+.nx/workspace-data
+.angular
+.DS_Store
+
+__screenshots__/
+
+vitest.config.*.timestamp*

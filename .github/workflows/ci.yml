@@ -1,0 +1,64 @@
+# Verify everything that changed, then build & push a Docker image ONLY for the apps that were affected.
+# A change in apps/mfe-cart deploys just mfe-cart; a change in libs/shared/* redeploys every consumer.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  NX_NO_CLOUD: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.affected.outputs.apps }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - uses: nrwl/nx-set-shas@v4
+      - run: npx nx affected -t lint test build
+      - id: affected
+        run: echo "apps=$(npx nx show projects --affected --type app --json)" >> "$GITHUB_OUTPUT"
+
+  image:
+    needs: verify
+    if: github.ref == 'refs/heads/main' && needs.verify.outputs.apps != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJson(needs.verify.outputs.apps) }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: tools/docker/Dockerfile
+          target: ${{ matrix.app == 'layout-api' && 'api' || 'web' }}
+          build-args: APP=${{ matrix.app }}
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/${{ matrix.app }}:${{ github.sha }}
+            ghcr.io/${{ github.repository }}/${{ matrix.app }}:latest
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+      # Deploy step goes here (e.g. update the image tag of this one service in your cluster/app service).

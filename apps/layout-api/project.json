@@ -1,0 +1,68 @@
+{
+  "name": "layout-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/layout-api/src",
+  "projectType": "application",
+  "tags": [
+    "type:app",
+    "scope:layout-api"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/layout-api",
+        "format": [
+          "cjs"
+        ],
+        "bundle": true,
+        "main": "apps/layout-api/src/main.ts",
+        "tsConfig": "apps/layout-api/tsconfig.app.json",
+        "assets": [],
+        "generatePackageJson": false,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        }
+      }
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": [
+        "build"
+      ],
+      "options": {
+        "buildTarget": "layout-api:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "layout-api:build:development"
+        },
+        "production": {
+          "buildTarget": "layout-api:build:production"
+        }
+      }
+    }
+  }
+}

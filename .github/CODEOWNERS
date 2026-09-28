@@ -1,0 +1,14 @@
+# Each team owns its microfrontend; Team Platform owns the shell, shared libs and workspace config.
+# Replace the handles with your real GitHub teams.
+
+*                       @your-org/team-platform
+
+/apps/shell/            @your-org/team-platform
+/apps/mfe-insights/     @your-org/team-insights
+/apps/mfe-products/     @your-org/team-catalog
+/apps/mfe-cart/         @your-org/team-checkout
+/apps/mfe-orders/       @your-org/team-fulfillment
+/apps/mfe-profile/      @your-org/team-identity
+
+/apps/layout-api/       @your-org/team-platform
+/libs/shared/           @your-org/team-platform

@@ -1,0 +1,128 @@
+{
+  "name": "mfe-profile",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "prof",
+  "sourceRoot": "apps/mfe-profile/src",
+  "tags": [
+    "type:app",
+    "scope:profile"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@angular-architects/native-federation:build",
+      "defaultConfiguration": "production",
+      "options": {
+        "cacheExternalArtifacts": true,
+        "tsConfig": "apps/mfe-profile/tsconfig.federation.json"
+      },
+      "configurations": {
+        "production": {
+          "target": "mfe-profile:esbuild:production"
+        },
+        "development": {
+          "target": "mfe-profile:esbuild:development",
+          "dev": true
+        }
+      }
+    },
+    "serve": {
+      "executor": "@angular-architects/native-federation:build",
+      "options": {
+        "target": "mfe-profile:serve-original:development",
+        "tsConfig": "apps/mfe-profile/tsconfig.federation.json",
+        "rebuildDelay": 500,
+        "cacheExternalArtifacts": true,
+        "dev": true,
+        "devServer": true,
+        "port": 0
+      },
+      "continuous": true
+    },
+    "test": {
+      "executor": "@angular/build:unit-test",
+      "options": {
+        "buildTarget": "mfe-profile:esbuild:development",
+        "tsConfig": "apps/mfe-profile/tsconfig.spec.json",
+        "watch": false
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "mfe-profile:build",
+        "port": 4205,
+        "staticFilePath": "dist/apps/mfe-profile/browser",
+        "spa": true
+      }
+    },
+    "esbuild": {
+      "executor": "@angular/build:application",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/apps/mfe-profile",
+        "browser": "apps/mfe-profile/src/main.ts",
+        "tsConfig": "apps/mfe-profile/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/mfe-profile/public"
+          }
+        ],
+        "styles": [
+          "apps/mfe-profile/src/styles.scss",
+          "apps/mfe-profile/src/tailwind.css"
+        ],
+        "polyfills": [
+          "es-module-shims"
+        ]
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "1mb",
+              "maximumError": "2mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "40kb",
+              "maximumError": "80kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      }
+    },
+    "serve-original": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "port": 4205
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "mfe-profile:esbuild:production"
+        },
+        "development": {
+          "buildTarget": "mfe-profile:esbuild:development"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

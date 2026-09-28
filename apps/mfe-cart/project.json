@@ -1,0 +1,128 @@
+{
+  "name": "mfe-cart",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "cart",
+  "sourceRoot": "apps/mfe-cart/src",
+  "tags": [
+    "type:app",
+    "scope:cart"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@angular-architects/native-federation:build",
+      "defaultConfiguration": "production",
+      "options": {
+        "cacheExternalArtifacts": true,
+        "tsConfig": "apps/mfe-cart/tsconfig.federation.json"
+      },
+      "configurations": {
+        "production": {
+          "target": "mfe-cart:esbuild:production"
+        },
+        "development": {
+          "target": "mfe-cart:esbuild:development",
+          "dev": true
+        }
+      }
+    },
+    "serve": {
+      "executor": "@angular-architects/native-federation:build",
+      "options": {
+        "target": "mfe-cart:serve-original:development",
+        "tsConfig": "apps/mfe-cart/tsconfig.federation.json",
+        "rebuildDelay": 500,
+        "cacheExternalArtifacts": true,
+        "dev": true,
+        "devServer": true,
+        "port": 0
+      },
+      "continuous": true
+    },
+    "test": {
+      "executor": "@angular/build:unit-test",
+      "options": {
+        "buildTarget": "mfe-cart:esbuild:development",
+        "tsConfig": "apps/mfe-cart/tsconfig.spec.json",
+        "watch": false
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "mfe-cart:build",
+        "port": 4203,
+        "staticFilePath": "dist/apps/mfe-cart/browser",
+        "spa": true
+      }
+    },
+    "esbuild": {
+      "executor": "@angular/build:application",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/apps/mfe-cart",
+        "browser": "apps/mfe-cart/src/main.ts",
+        "tsConfig": "apps/mfe-cart/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/mfe-cart/public"
+          }
+        ],
+        "styles": [
+          "apps/mfe-cart/src/styles.scss",
+          "apps/mfe-cart/src/tailwind.css"
+        ],
+        "polyfills": [
+          "es-module-shims"
+        ]
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "1mb",
+              "maximumError": "2mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "40kb",
+              "maximumError": "80kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      }
+    },
+    "serve-original": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "port": 4203
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "mfe-cart:esbuild:production"
+        },
+        "development": {
+          "buildTarget": "mfe-cart:esbuild:development"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}
