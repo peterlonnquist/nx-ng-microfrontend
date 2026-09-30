@@ -36,7 +36,10 @@
         "cacheExternalArtifacts": true,
         "dev": true,
         "devServer": true,
-        "port": 0
+        "port": 0,
+        "buildNotifications": {
+          "enable": true
+        }
       }
     },
     "test": {
