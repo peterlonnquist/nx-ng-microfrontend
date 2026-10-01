@@ -31,6 +31,12 @@ npm install
 npm start            # = nx serve shell → startar shell + alla 5 remotes + layout-api
 ```
 
+Lokalt lägger shellens dev-server på `Authorization: Bearer <token>` och `X-Custom-Info` på alla `/api`-anrop, så
+ingen riktig inloggning behövs. Användarna står i [apps/shell/dev-users.json](apps/shell/dev-users.json). Byt
+användare genom att ändra `"active"` där. Filen läses vid varje anrop
+([proxy.conf.mjs](apps/shell/proxy.conf.mjs)), så det gäller direkt, utan omstart. Ladda om sidan för att hämta
+om data som redan visas.
+
 Öppna http://localhost:4200. Slå av/på **"Visa MFE-gränser"** i menyn för att se vilken del som kommer från
 vilket team, version och vilken server koden faktiskt laddades från.
 

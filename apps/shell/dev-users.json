@@ -1,0 +1,13 @@
+{
+  "active": "anna",
+  "users": {
+    "anna": {
+      "token": "dev-token-anna",
+      "customInfo": "userId=anna;roles=admin"
+    },
+    "kim": {
+      "token": "dev-token-kim",
+      "customInfo": "userId=kim;roles=customer"
+    }
+  }
+}
