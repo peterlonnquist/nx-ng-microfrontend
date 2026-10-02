@@ -36,7 +36,8 @@
           ],
           "target": "serve"
         },
-        "layout-api:serve"
+        "layout-api:serve",
+        "dev-login:serve"
       ],
       "options": {
         "target": "shell:serve-original:development",

@@ -1,0 +1,98 @@
+{
+  "name": "dev-login",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "dev",
+  "sourceRoot": "apps/dev-login/src",
+  "tags": [
+    "type:app",
+    "scope:dev-tools"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@angular/build:application",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/apps/dev-login",
+        "browser": "apps/dev-login/src/main.ts",
+        "tsConfig": "apps/dev-login/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/dev-login/public"
+          },
+          {
+            "glob": "dev-users.json",
+            "input": "tools/dev-proxy",
+            "output": "/"
+          }
+        ],
+        "styles": [
+          "apps/dev-login/src/styles.scss",
+          "apps/dev-login/src/tailwind.css"
+        ]
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "1mb",
+              "maximumError": "2mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "40kb",
+              "maximumError": "80kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      }
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "port": 4299
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "dev-login:build:production"
+        },
+        "development": {
+          "buildTarget": "dev-login:build:development"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@angular/build:unit-test",
+      "options": {
+        "watch": false
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "dev-login:build",
+        "port": 4299,
+        "staticFilePath": "dist/apps/dev-login/browser",
+        "spa": true
+      }
+    }
+  }
+}

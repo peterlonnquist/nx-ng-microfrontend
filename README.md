@@ -33,9 +33,17 @@ npm start            # = nx serve shell → startar shell + alla 5 remotes + lay
 
 Lokalt lägger dev-servern på `Authorization: Bearer <token>` och `X-Custom-Info` på alla `/api`- och
 `/gateway`-anrop, så ingen riktig inloggning behövs. Användarna står i
-[tools/dev-proxy/dev-users.json](tools/dev-proxy/dev-users.json). Byt användare genom att ändra `"active"` där.
-Filen läses vid varje anrop ([proxy.conf.mjs](tools/dev-proxy/proxy.conf.mjs)), så det gäller direkt, utan
-omstart. Ladda om sidan för att hämta om data som redan visas.
+[tools/dev-proxy/dev-users.json](tools/dev-proxy/dev-users.json).
+
+Första gången du öppnar en dev-server skickas du till http://localhost:4299, appen
+[dev-login](apps/dev-login). Där väljer du användare. Valet sparas i cookien `dev-user` och du skickas tillbaka
+till sidan du kom från. Byt användare genom att gå till 4299 igen. dev-login startas av `npm start`, eller
+fristående med `nx serve dev-login`. Den är bara ett dev-verktyg och deployas inte.
+
+- Cookies skiljer inte på portar, så valet gäller alla dev-servrar på localhost, även en fristående remote.
+- Valet gäller per webbläsare, så du kan vara `anna` i en webbläsare och `kim` i en annan.
+- Utan vald användare svarar `/api`- och `/gateway`-anrop med 401.
+- dev-users.json läses vid varje anrop, så ändringar gäller utan omstart.
 
 Öppna http://localhost:4200. Slå av/på **"Visa MFE-gränser"** i menyn för att se vilken del som kommer från
 vilket team, version och vilken server koden faktiskt laddades från.
