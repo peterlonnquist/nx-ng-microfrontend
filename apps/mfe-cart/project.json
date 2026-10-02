@@ -113,7 +113,8 @@
       "executor": "@angular/build:dev-server",
       "defaultConfiguration": "development",
       "options": {
-        "port": 4203
+        "port": 4203,
+        "proxyConfig": "tools/dev-proxy/proxy.conf.mjs"
       },
       "configurations": {
         "production": {

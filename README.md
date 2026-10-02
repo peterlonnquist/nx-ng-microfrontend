@@ -31,11 +31,11 @@ npm install
 npm start            # = nx serve shell → startar shell + alla 5 remotes + layout-api
 ```
 
-Lokalt lägger shellens dev-server på `Authorization: Bearer <token>` och `X-Custom-Info` på alla `/api`-anrop, så
-ingen riktig inloggning behövs. Användarna står i [apps/shell/dev-users.json](apps/shell/dev-users.json). Byt
-användare genom att ändra `"active"` där. Filen läses vid varje anrop
-([proxy.conf.mjs](apps/shell/proxy.conf.mjs)), så det gäller direkt, utan omstart. Ladda om sidan för att hämta
-om data som redan visas.
+Lokalt lägger dev-servern på `Authorization: Bearer <token>` och `X-Custom-Info` på alla `/api`- och
+`/gateway`-anrop, så ingen riktig inloggning behövs. Användarna står i
+[tools/dev-proxy/dev-users.json](tools/dev-proxy/dev-users.json). Byt användare genom att ändra `"active"` där.
+Filen läses vid varje anrop ([proxy.conf.mjs](tools/dev-proxy/proxy.conf.mjs)), så det gäller direkt, utan
+omstart. Ladda om sidan för att hämta om data som redan visas.
 
 Öppna http://localhost:4200. Slå av/på **"Visa MFE-gränser"** i menyn för att se vilken del som kommer från
 vilket team, version och vilken server koden faktiskt laddades från.
@@ -190,9 +190,18 @@ visar dashboarden alla widgets i standardstorlek med en varning.
   Tailwind ska fungera. Angular injicerar identiska stilar bara en gång.
 - Widgets ska vara självständiga: de läser data från delade stores eller eget API och navigerar via URL:er.
 
-I dev proxar Angulars dev-server `/api` till `layout-api` ([proxy.conf.json](apps/shell/proxy.conf.json)).
+I dev proxar Angulars dev-server `/api` till `layout-api` ([proxy.conf.mjs](tools/dev-proxy/proxy.conf.mjs)).
 I Docker gör shellens nginx samma sak ([41-api-proxy.sh](tools/docker/41-api-proxy.sh)), så frontend-koden
 använder alltid samma relativa URL.
+
+### Backend-tjänster via `/gateway`
+
+Services anropar backend med samma relativa URL som i test, till exempel `/gateway/profile/api/v1/profil`. I test
+ligger gatewayen på samma origin som sidan. Lokalt skickar dev-proxyn `/gateway/<tjänst>/…` vidare till
+`localhost:<port>/<tjänst>/…`. Ingen bas-URL per miljö behövs, och samma image fungerar överallt.
+
+Shellen och alla remotes använder samma proxy, så det fungerar både i shellen och när en remote körs fristående.
+En ny tjänst blir en ny rad i `GATEWAY_SERVICES` i [proxy.conf.mjs](tools/dev-proxy/proxy.conf.mjs).
 
 ## Docker och oberoende deploys
 

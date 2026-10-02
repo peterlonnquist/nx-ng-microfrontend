@@ -120,7 +120,7 @@
       "defaultConfiguration": "development",
       "options": {
         "port": 4200,
-        "proxyConfig": "apps/shell/proxy.conf.mjs"
+        "proxyConfig": "tools/dev-proxy/proxy.conf.mjs"
       },
       "configurations": {
         "production": {
