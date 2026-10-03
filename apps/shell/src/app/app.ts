@@ -7,6 +7,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -18,6 +19,10 @@ import { MfeDevSettings } from '@mfe/shared/ui';
 import { formatPrice, onMfeEvent } from '@mfe/shared/util';
 import { NAV_ITEMS } from './layout/navigation';
 
+// A full page load, not a router link: the auth in front of the app ends the session and redirects.
+// Locally the dev proxy answers it (apps/dev-proxy/proxy/proxy.conf.mjs).
+const LOGOUT_URL = '/logout';
+
 @Component({
   selector: 'app-root',
   imports: [
@@ -28,6 +33,7 @@ import { NAV_ITEMS } from './layout/navigation';
     MatButtonModule,
     MatIconModule,
     MatListModule,
+    MatMenuModule,
     MatSidenavModule,
     MatSlideToggleModule,
     MatToolbarModule,
@@ -86,13 +92,19 @@ import { NAV_ITEMS } from './layout/navigation';
               shopping_cart
             </mat-icon>
           </a>
-          <a
-            routerLink="/profile"
-            class="ml-2 grid h-9 w-9 place-items-center rounded-full bg-primary text-sm font-medium text-on-primary no-underline"
+          <button
+            type="button"
+            class="ml-2 grid h-9 w-9 cursor-pointer place-items-center rounded-full border-0 bg-primary text-sm font-medium text-on-primary"
             [matTooltip]="user.user().name"
+            [matMenuTriggerFor]="userMenu"
+            aria-label="Användarmeny"
           >
             {{ user.initials() }}
-          </a>
+          </button>
+          <mat-menu #userMenu="matMenu" xPosition="before">
+            <a mat-menu-item routerLink="/profile"><mat-icon>person</mat-icon> Profil</a>
+            <a mat-menu-item [href]="logoutUrl"><mat-icon>logout</mat-icon> Logga ut</a>
+          </mat-menu>
         </mat-toolbar>
 
         <main class="mx-auto max-w-6xl px-4 pb-12 pt-2 sm:px-6">
@@ -104,6 +116,7 @@ import { NAV_ITEMS } from './layout/navigation';
 })
 export class App {
   protected readonly nav = NAV_ITEMS;
+  protected readonly logoutUrl = LOGOUT_URL;
   protected readonly cart = inject(CartStore);
   protected readonly user = inject(UserStore);
   protected readonly dev = inject(MfeDevSettings);

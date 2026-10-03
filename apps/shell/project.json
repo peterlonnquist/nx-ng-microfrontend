@@ -37,7 +37,7 @@
           "target": "serve"
         },
         "layout-api:serve",
-        "dev-login:serve"
+        "dev-proxy:serve"
       ],
       "options": {
         "target": "shell:serve-original:development",
@@ -121,7 +121,7 @@
       "defaultConfiguration": "development",
       "options": {
         "port": 4200,
-        "proxyConfig": "tools/dev-proxy/proxy.conf.mjs"
+        "proxyConfig": "apps/dev-proxy/proxy/proxy.conf.mjs"
       },
       "configurations": {
         "production": {

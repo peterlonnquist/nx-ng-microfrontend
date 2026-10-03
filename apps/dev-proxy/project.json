@@ -1,9 +1,9 @@
 {
-  "name": "dev-login",
+  "name": "dev-proxy",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "prefix": "dev",
-  "sourceRoot": "apps/dev-login/src",
+  "sourceRoot": "apps/dev-proxy/src",
   "tags": [
     "type:app",
     "scope:dev-tools"
@@ -16,24 +16,19 @@
       ],
       "defaultConfiguration": "production",
       "options": {
-        "outputPath": "dist/apps/dev-login",
-        "browser": "apps/dev-login/src/main.ts",
-        "tsConfig": "apps/dev-login/tsconfig.app.json",
+        "outputPath": "dist/apps/dev-proxy",
+        "browser": "apps/dev-proxy/src/main.ts",
+        "tsConfig": "apps/dev-proxy/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [
           {
             "glob": "**/*",
-            "input": "apps/dev-login/public"
-          },
-          {
-            "glob": "dev-users.json",
-            "input": "tools/dev-proxy",
-            "output": "/"
+            "input": "apps/dev-proxy/public"
           }
         ],
         "styles": [
-          "apps/dev-login/src/styles.scss",
-          "apps/dev-login/src/tailwind.css"
+          "apps/dev-proxy/src/styles.scss",
+          "apps/dev-proxy/src/tailwind.css"
         ]
       },
       "configurations": {
@@ -68,10 +63,10 @@
       },
       "configurations": {
         "production": {
-          "buildTarget": "dev-login:build:production"
+          "buildTarget": "dev-proxy:build:production"
         },
         "development": {
-          "buildTarget": "dev-login:build:development"
+          "buildTarget": "dev-proxy:build:development"
         }
       }
     },
@@ -88,9 +83,9 @@
       "continuous": true,
       "executor": "@nx/web:file-server",
       "options": {
-        "buildTarget": "dev-login:build",
+        "buildTarget": "dev-proxy:build",
         "port": 4299,
-        "staticFilePath": "dist/apps/dev-login/browser",
+        "staticFilePath": "dist/apps/dev-proxy/browser",
         "spa": true
       }
     }

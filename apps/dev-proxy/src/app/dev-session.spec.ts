@@ -12,7 +12,7 @@ describe('dev-session', () => {
   });
 
   it('expires the cookie on logout', () => {
-    expect(devUserCookie(undefined)).toContain('max-age=0');
+    expect(devUserCookie(undefined)).toContain('Max-Age=0');
   });
 
   it('only redirects to a local dev server', () => {

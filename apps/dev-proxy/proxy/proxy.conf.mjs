@@ -4,9 +4,9 @@
 //   /api/...                      -> layout-api
 //   /gateway/<service>/api/...    -> the backend microservice, locally at localhost:<port>/<service>/api/...
 //
-// Adds the headers a real login would produce to every proxied call, for the user picked in the dev-login
-// app (http://localhost:4299, a `dev-user` cookie). Without one, page loads redirect to dev-login and API
-// calls get 401.
+// Adds the headers a real login would produce to every proxied call, for the user picked on this app's login
+// page (http://localhost:4299, a `dev-user` cookie). Without one, page loads redirect there and API calls get 401.
+import { devUserCookie } from './dev-user-cookie.mjs';
 import { devUserFor } from './dev-users.mjs';
 
 // Backend microservice -> local port. Add a line per service.
@@ -47,8 +47,23 @@ const gateway = Object.fromEntries(
   ]),
 );
 
+// Stands in for the real logout: forget the dev user and go pick another one.
+const logout = {
+  '/logout': {
+    target: 'http://localhost',
+    bypass: (req, res) => {
+      res.writeHead(302, {
+        'Set-Cookie': devUserCookie(undefined),
+        Location: `${DEV_LOGIN}?to=${encodeURIComponent(`http://${req.headers.host}/`)}`,
+      });
+      res.end();
+      return req.url;
+    },
+  },
+};
+
 // Matches every other request, but never proxies: `bypass` either redirects a page load without a dev user
-// to dev-login, or returns the URL so the dev server serves it as usual.
+// to the login page, or returns the URL so the dev server serves it as usual.
 const loginRedirect = {
   '^/': {
     target: 'http://localhost',
@@ -69,5 +84,6 @@ const loginRedirect = {
 export default {
   '/api': api('http://localhost:3333'),
   ...gateway,
+  ...logout,
   ...loginRedirect,
 };

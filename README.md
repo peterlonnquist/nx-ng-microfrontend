@@ -33,17 +33,22 @@ npm start            # = nx serve shell → startar shell + alla 5 remotes + lay
 
 Lokalt lägger dev-servern på `Authorization: Bearer <token>` och `X-Custom-Info` på alla `/api`- och
 `/gateway`-anrop, så ingen riktig inloggning behövs. Användarna står i
-[tools/dev-proxy/dev-users.json](tools/dev-proxy/dev-users.json).
+[apps/dev-proxy/dev-users.json](apps/dev-proxy/dev-users.json).
 
-Första gången du öppnar en dev-server skickas du till http://localhost:4299, appen
-[dev-login](apps/dev-login). Där väljer du användare. Valet sparas i cookien `dev-user` och du skickas tillbaka
-till sidan du kom från. Byt användare genom att gå till 4299 igen. dev-login startas av `npm start`, eller
-fristående med `nx serve dev-login`. Den är bara ett dev-verktyg och deployas inte.
+Första gången du öppnar en dev-server skickas du till http://localhost:4299, inloggningssidan i appen
+[dev-proxy](apps/dev-proxy). Där väljer du användare. Valet sparas i cookien `dev-user` och du skickas tillbaka
+till sidan du kom från. Byt användare genom att gå till 4299 igen. dev-proxy startas av `npm start`, eller
+fristående med `nx serve dev-proxy`. Den är bara ett dev-verktyg och deployas inte.
+
+dev-proxy samlar allt som rör den lokala dev-miljön mot backend: användarna, inloggningssidan och
+[proxy-configen](apps/dev-proxy/proxy/proxy.conf.mjs) som shellen och alla remotes dev-servrar använder.
 
 - Cookies skiljer inte på portar, så valet gäller alla dev-servrar på localhost, även en fristående remote.
 - Valet gäller per webbläsare, så du kan vara `anna` i en webbläsare och `kim` i en annan.
 - Utan vald användare svarar `/api`- och `/gateway`-anrop med 401.
-- dev-users.json läses vid varje anrop, så ändringar gäller utan omstart.
+- "Logga ut" i användarmenyn i shellen går till `/logout`. Lokalt rensar dev-proxyn cookien och skickar dig till
+  inloggningssidan. I test måste den riktiga inloggningen svara på samma sökväg.
+- dev-users.json läses vid varje anrop, så ändringar gäller utan omstart. Inloggningssidan laddas om av sig själv.
 
 Öppna http://localhost:4200. Slå av/på **"Visa MFE-gränser"** i menyn för att se vilken del som kommer från
 vilket team, version och vilken server koden faktiskt laddades från.
@@ -198,7 +203,7 @@ visar dashboarden alla widgets i standardstorlek med en varning.
   Tailwind ska fungera. Angular injicerar identiska stilar bara en gång.
 - Widgets ska vara självständiga: de läser data från delade stores eller eget API och navigerar via URL:er.
 
-I dev proxar Angulars dev-server `/api` till `layout-api` ([proxy.conf.mjs](tools/dev-proxy/proxy.conf.mjs)).
+I dev proxar Angulars dev-server `/api` till `layout-api` ([proxy.conf.mjs](apps/dev-proxy/proxy/proxy.conf.mjs)).
 I Docker gör shellens nginx samma sak ([41-api-proxy.sh](tools/docker/41-api-proxy.sh)), så frontend-koden
 använder alltid samma relativa URL.
 
@@ -209,7 +214,7 @@ ligger gatewayen på samma origin som sidan. Lokalt skickar dev-proxyn `/gateway
 `localhost:<port>/<tjänst>/…`. Ingen bas-URL per miljö behövs, och samma image fungerar överallt.
 
 Shellen och alla remotes använder samma proxy, så det fungerar både i shellen och när en remote körs fristående.
-En ny tjänst blir en ny rad i `GATEWAY_SERVICES` i [proxy.conf.mjs](tools/dev-proxy/proxy.conf.mjs).
+En ny tjänst blir en ny rad i `GATEWAY_SERVICES` i [proxy.conf.mjs](apps/dev-proxy/proxy/proxy.conf.mjs).
 
 ## Docker och oberoende deploys
 

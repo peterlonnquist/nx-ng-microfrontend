@@ -1,15 +1,8 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, computed, inject, resource, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import {
-  DEV_USERS_URL,
-  DevUsersFile,
-  devUserCookie,
-  readDevUserCookie,
-  redirectTarget,
-  toDevUsers,
-} from './dev-session';
+import { devUserCookie, readDevUserCookie, redirectTarget, users } from './dev-session';
 
 @Component({
   selector: 'dev-root',
@@ -24,14 +17,8 @@ import {
         </p>
       </header>
 
-      @if (devUsers.error()) {
-        <p class="rounded-2xl bg-error-container p-4 text-on-error-container">
-          Kunde inte läsa dev-users.json: {{ devUsers.error()?.message }}
-        </p>
-      }
-
       <ul class="m-0 flex list-none flex-col gap-3 p-0">
-        @for (user of users(); track user.name) {
+        @for (user of users; track user.name) {
           @let current = user.name === cookieUser();
           <li
             class="flex items-center gap-4 rounded-2xl p-4"
@@ -72,17 +59,7 @@ import {
 export class App {
   private readonly document = inject(DOCUMENT);
 
-  protected readonly devUsers = resource({
-    loader: async ({ abortSignal }) => {
-      const response = await fetch(DEV_USERS_URL, { cache: 'no-store', signal: abortSignal });
-      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-      return (await response.json()) as DevUsersFile;
-    },
-  });
-  protected readonly users = computed(() => {
-    const file = this.devUsers.value();
-    return file ? toDevUsers(file) : [];
-  });
+  protected readonly users = users;
   protected readonly redirectTo = redirectTarget(this.document.location.search);
   protected readonly cookieUser = signal(readDevUserCookie(this.document.cookie));
 

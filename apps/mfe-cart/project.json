@@ -114,7 +114,7 @@
       "defaultConfiguration": "development",
       "options": {
         "port": 4203,
-        "proxyConfig": "tools/dev-proxy/proxy.conf.mjs"
+        "proxyConfig": "apps/dev-proxy/proxy/proxy.conf.mjs"
       },
       "configurations": {
         "production": {
