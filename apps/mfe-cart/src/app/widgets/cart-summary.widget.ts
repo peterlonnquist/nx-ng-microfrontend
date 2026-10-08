@@ -8,7 +8,7 @@ import { formatPrice } from '@mfe/shared/util';
   selector: 'cart-summary-widget',
   imports: [RouterLink, MatButtonModule],
   encapsulation: ViewEncapsulation.None,
-  styleUrl: '../remote-entry/remote-styles.css',
+  styleUrl: '../app.css',
   host: { class: 'flex h-full flex-col' },
   template: `
     <div class="text-4xl font-medium tabular-nums">{{ cart.count() }}</div>

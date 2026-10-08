@@ -7,13 +7,14 @@ Microfrontend PoC: Nx 23 monorepo, Angular 22 (zoneless, standalone, signals), N
 - Run every task through Nx (`npx nx <target> <project>`, `npx nx run-many`, `npx nx affected`) and scaffold with Nx generators.
 - Respect team boundaries: a remote imports only `@mfe/shared/*` and its own code. Remotes talk through shared stores (`@mfe/shared/data-access`), `publishMfeEvent`, or plain router URLs. `nx lint` enforces this via project tags.
 - `libs/shared/*` are federated singletons: the shell's copy wins at runtime, so keep their public API backwards compatible.
-- In `apps/*/src/main.ts`, import only `@angular-architects/native-federation` before `initFederation` resolves; Angular loads later via `bootstrap.ts`.
+- In `apps/shell/src/main.ts`, import only `@angular-architects/native-federation` before `initFederation` resolves; Angular loads later via `bootstrap.ts`.
+- Remotes run only inside the shell. A remote exposes `./routes` from `app.routes.ts` (export name `routes`, the contract with the shell) and `./widgets`; its `main.ts` is only the build entry and bootstraps nothing.
 - Keep NF's default shared bundling in `federation.config.mjs`; `build: 'package'` races in the cache dir and breaks parallel builds.
 
 ## Styling
 
-- A remote's global styles stay behind when it runs in the shell. Its Tailwind utilities ship through `remote-entry/remote-styles.css` on a `ViewEncapsulation.None` component.
-- Every widget component sets `encapsulation: ViewEncapsulation.None` and `styleUrl: '../remote-entry/remote-styles.css'`, since it renders outside its team's `RemoteEntry`.
+- A remote's global styles stay behind when it runs in the shell. Its Tailwind utilities ship through `app.css` on its root component `App` (`ViewEncapsulation.None`).
+- Every widget component sets `encapsulation: ViewEncapsulation.None` and `styleUrl: '../app.css'`, since it renders outside its team's `App`.
 - Tailwind lives in cascade layers and Material does not: override Material with `!`-prefixed utilities (`!w-64`).
 - Colours come from Material tokens via `libs/shared/ui/src/styles/tailwind-theme.css` (`bg-surface-container`, `text-on-surface-variant`, …).
 

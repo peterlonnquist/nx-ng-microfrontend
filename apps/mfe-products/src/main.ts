@@ -1,7 +1,10 @@
-import { initFederation } from '@angular-architects/native-federation';
-
-// Remotes have no manifest of their own: they only register their shared dependencies
-// so the app can also run standalone during development.
-initFederation({}, { hostRemoteEntry: { url: './remoteEntry.json' } })
-  .then(() => import('./bootstrap'))
-  .catch((err) => console.error(err));
+// mfe-products only runs inside the shell, which holds the logged-in user's profile and permissions. The shell loads
+// what federation.config.mjs exposes (./routes, ./widgets); this file is only the build's entry point and
+// what you see when opening this remote's own dev server or container directly.
+document.body.innerHTML = `
+  <main style="max-width: 32rem; margin: 6rem auto; padding: 0 1rem; text-align: center">
+    <h1 style="margin: 0 0 0.75rem; font: var(--mat-sys-headline-small)">mfe-products körs bara i shellen</h1>
+    <p style="color: var(--mat-sys-on-surface-variant)">
+      Starta med <code>npm start</code> och öppna <a href="http://localhost:4200/products">localhost:4200/products</a>.
+    </p>
+  </main>`;

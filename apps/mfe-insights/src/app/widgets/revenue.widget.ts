@@ -4,9 +4,9 @@ import { formatPrice } from '@mfe/shared/util';
 
 @Component({
   selector: 'ins-revenue-widget',
-  // Widgets render outside RemoteEntry, so they bring this remote's Tailwind utilities themselves.
+  // Widgets render outside App, so they bring this remote's Tailwind utilities themselves.
   encapsulation: ViewEncapsulation.None,
-  styleUrl: '../remote-entry/remote-styles.css',
+  styleUrl: '../app.css',
   template: `
     <div class="text-4xl font-medium tabular-nums">{{ revenue() }}</div>
     <div class="mt-4 grid grid-cols-2 gap-4 text-sm">

@@ -10,7 +10,7 @@ import { CATALOG } from '../data/catalog';
   selector: 'prod-top-rated-widget',
   imports: [RouterLink, MatButtonModule, MatIconModule],
   encapsulation: ViewEncapsulation.None,
-  styleUrl: '../remote-entry/remote-styles.css',
+  styleUrl: '../app.css',
   template: `
     <ul class="m-0 list-none space-y-2 p-0">
       @for (p of top; track p.id) {

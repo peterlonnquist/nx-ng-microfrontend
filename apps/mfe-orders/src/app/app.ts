@@ -1,17 +1,24 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { MfeBoundary } from '@mfe/shared/ui';
+import { MFE_INFO } from './mfe-info';
 
-/** Only used when the microfrontend runs standalone (e.g. `nx serve mfe-orders`). */
+/**
+ * Root of everything this team shows in the shell: the MFE boundary, and the team's Tailwind utilities
+ * (app.css, ViewEncapsulation.None), since a remote's global styles never reach the shell.
+ */
 @Component({
   selector: 'ord-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, MfeBoundary],
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './app.css',
   template: `
-    <div class="bg-tertiary-container px-4 py-2 text-center text-sm text-on-tertiary-container">
-      Running <strong>mfe-orders</strong> standalone – start the shell to see it composed with the other microfrontends.
-    </div>
-    <main class="mx-auto max-w-6xl p-6">
+    <mfe-boundary [info]="info" [origin]="origin">
       <router-outlet />
-    </main>
+    </mfe-boundary>
   `,
 })
-export class App {}
+export class App {
+  protected readonly info = MFE_INFO;
+  protected readonly origin = new URL(import.meta.url).origin;
+}

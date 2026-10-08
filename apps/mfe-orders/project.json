@@ -78,8 +78,7 @@
           }
         ],
         "styles": [
-          "apps/mfe-orders/src/styles.scss",
-          "apps/mfe-orders/src/tailwind.css"
+          "apps/mfe-orders/src/styles.scss"
         ],
         "polyfills": [
           "es-module-shims"

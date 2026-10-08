@@ -43,7 +43,7 @@ fristående med `nx serve dev-proxy`. Den är bara ett dev-verktyg och deployas 
 dev-proxy samlar allt som rör den lokala dev-miljön mot backend: användarna, inloggningssidan och
 [proxy-configen](apps/dev-proxy/proxy/proxy.conf.mjs) som shellen och alla remotes dev-servrar använder.
 
-- Cookies skiljer inte på portar, så valet gäller alla dev-servrar på localhost, även en fristående remote.
+- Cookies skiljer inte på portar, så valet gäller alla dev-servrar på localhost.
 - Valet gäller per webbläsare, så du kan vara `anna` i en webbläsare och `kim` i en annan.
 - Utan vald användare svarar `/api`- och `/gateway`-anrop med 401.
 - "Logga ut" i användarmenyn i shellen går till `/logout`. Lokalt rensar dev-proxyn cookien och skickar dig till
@@ -53,11 +53,9 @@ dev-proxy samlar allt som rör den lokala dev-miljön mot backend: användarna, 
 Öppna http://localhost:4200. Slå av/på **"Visa MFE-gränser"** i menyn för att se vilken del som kommer från
 vilket team, version och vilken server koden faktiskt laddades från.
 
-Jobba med bara din egen microfrontend (snabbare, ingen shell):
-
-```bash
-npx nx serve mfe-cart        # http://localhost:4203, körs standalone
-```
+Microfrontends körs **bara i shellen**, som håller den inloggade användarens profil och behörigheter. En remote
+exponerar sina routes och widgets, men har ingen egen app att starta. Öppnar du en remotes port direkt
+(t.ex. http://localhost:4203) visas bara en hänvisning till shellen.
 
 Övriga kommandon:
 
@@ -80,7 +78,8 @@ apps/
   mfe-<domän>/               # En deploybar enhet per team
     federation.config.mjs    # vad appen exponerar och delar
     src/app/
-      remote-entry/          # Exponeras som ./routes: entry.routes.ts + rot-komponent med stilar
+      app.routes.ts          # Exponeras som ./routes, shellen mountar dem under teamets prefix
+      app.ts, app.css        # Rot-komponent: MFE-gräns + teamets Tailwind-utilities
       widgets/               # Exponeras som ./widgets: katalog + widget-komponenter
       mfe-info.ts            # namn/team/version (visas i UI:t)
       *.ts                   # teamets egna features
@@ -124,7 +123,7 @@ flowchart LR
 1. **Shellen** kör `initFederation('federation.manifest.json')` i [main.ts](apps/shell/src/main.ts).
    Manifestet hämtas vid runtime, så samma build kan peka på olika remote-URL:er i olika miljöer.
 2. Varje remote **exponerar `./routes`**
-   ([exempel](apps/mfe-cart/src/app/remote-entry/entry.routes.ts)). Shellen mountar dem med
+   från sin `app.routes.ts` ([exempel](apps/mfe-cart/src/app/app.routes.ts)). Shellen mountar dem med
    `loadChildren: loadRemoteRoutes('mfe-cart')` i [app.routes.ts](apps/shell/src/app/app.routes.ts).
    Teamet äger allt under sitt URL-prefix, inklusive egna underroutes (`/products/:id`).
 3. **Om en remote är nere** visar shellen en fallback för just den delen, och resten fungerar
@@ -146,13 +145,13 @@ flowchart LR
 ### Styling: Angular Material + Tailwind
 
 - Ett enda **Material 3-tema** i [libs/shared/ui/src/styles/_theme.scss](libs/shared/ui/src/styles/_theme.scss)
-  inkluderas av varje app, så att en remote ser likadan ut standalone som i shellen. Ljust/mörkt följer OS:et
+  inkluderas globalt av shellen och gäller därmed alla remotes. Ljust/mörkt följer OS:et
   eller valet på profilsidan.
 - [tailwind-theme.css](libs/shared/ui/src/styles/tailwind-theme.css) mappar Tailwind-färger till Materials
   tokens: `bg-primary`, `bg-surface-container`, `text-on-surface-variant` osv. följer temat automatiskt.
 - **Viktigt för microfrontends:** en remotes *globala* stilar följer inte med in i shellen, bara komponentstilar
-  gör det. Därför bär varje remotes rot-komponent sina egna Tailwind-utilities
-  ([remote-styles.css](apps/mfe-cart/src/app/remote-entry/remote-styles.css), `ViewEncapsulation.None`).
+  gör det. Därför bär varje remotes rot-komponent, `App`, sina egna Tailwind-utilities
+  ([app.css](apps/mfe-cart/src/app/app.css), `ViewEncapsulation.None`).
   Shellen behöver aldrig veta vilka klasser en remote använder, så deployer förblir oberoende.
 - Tailwind ligger i CSS cascade layers och Material inte. Vill du **skriva över** en Material-stil med
   Tailwind behöver du `!`-prefix, t.ex. `class="!w-64"`.
@@ -198,8 +197,8 @@ visar dashboarden alla widgets i standardstorlek med en varning.
 `widgets/index.ts` och deploya remoten. Den dyker upp i adminkatalogen direkt.
 
 - Widget-id (`orders.recent`) sparas i layouter. Byt aldrig namn på ett id, lägg hellre till ett nytt.
-- En widget renderas utanför teamets `RemoteEntry` och måste därför själv ha
-  `styleUrl: '../remote-entry/remote-styles.css'` och `encapsulation: ViewEncapsulation.None` för att
+- En widget renderas utanför teamets `App` och måste därför själv ha
+  `styleUrl: '../app.css'` och `encapsulation: ViewEncapsulation.None` för att
   Tailwind ska fungera. Angular injicerar identiska stilar bara en gång.
 - Widgets ska vara självständiga: de läser data från delade stores eller eget API och navigerar via URL:er.
 
@@ -213,7 +212,6 @@ Services anropar backend med samma relativa URL som i test, till exempel `/gatew
 ligger gatewayen på samma origin som sidan. Lokalt skickar dev-proxyn `/gateway/<tjänst>/…` vidare till
 `localhost:<port>/<tjänst>/…`. Ingen bas-URL per miljö behövs, och samma image fungerar överallt.
 
-Shellen och alla remotes använder samma proxy, så det fungerar både i shellen och när en remote körs fristående.
 En ny tjänst blir en ny rad i `GATEWAY_SERVICES` i [proxy.conf.mjs](apps/dev-proxy/proxy/proxy.conf.mjs).
 
 ## Docker och oberoende deploys
@@ -283,9 +281,11 @@ npx nx g @angular-architects/native-federation:init --project=mfe-reviews --port
 
 Sedan:
 
-1. Kopiera mönstret från en befintlig remote: `remote-entry/`, `widgets/`, `mfe-info.ts`, `styles.scss`,
-   `tailwind.css`, exponera `./routes` och `./widgets` i `federation.config.mjs`, lägg `tailwind.css` i `esbuild.options.styles`
-   och sätt `test.options.buildTarget` till `mfe-reviews:esbuild:development` i `project.json`.
+1. Kopiera mönstret från en befintlig remote: `main.ts`, `app.ts`, `app.css`, `app.routes.ts`, `widgets/` och
+   `mfe-info.ts`. Ta bort det generatorn skapade för att köra appen fristående (`bootstrap.ts`, `app.config.ts`,
+   `tailwind.css` och dess rad i `esbuild.options.styles`). Exponera `./routes` (`app.routes.ts`) och `./widgets`
+   i `federation.config.mjs`, och sätt `test.options.buildTarget` till `mfe-reviews:esbuild:development` i
+   `project.json`.
 2. Lägg till remoten i `apps/shell/public/federation.manifest.json`, `app.routes.ts` och `layout/navigation.ts`.
 3. Lägg till `scope:reviews` i `depConstraints` i `eslint.config.mjs`, en tjänst i `docker-compose.yml`
    och en rad i `CODEOWNERS`.

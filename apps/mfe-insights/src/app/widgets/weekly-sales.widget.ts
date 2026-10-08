@@ -4,7 +4,7 @@ import { WEEKLY_SALES } from '../data/weekly-sales';
 @Component({
   selector: 'ins-weekly-sales-widget',
   encapsulation: ViewEncapsulation.None,
-  styleUrl: '../remote-entry/remote-styles.css',
+  styleUrl: '../app.css',
   host: { class: 'flex h-full min-h-40 gap-2' },
   template: `
     @for (bar of week; track bar.day) {

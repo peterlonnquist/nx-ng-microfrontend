@@ -6,7 +6,7 @@ export default withNativeFederation({
 
 
   exposes: {
-    './routes': './apps/mfe-orders/src/app/remote-entry/entry.routes.ts',
+    './routes': './apps/mfe-orders/src/app/app.routes.ts',
     './widgets': './apps/mfe-orders/src/app/widgets/index.ts',
   },
 

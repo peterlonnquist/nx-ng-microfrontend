@@ -78,8 +78,7 @@
           }
         ],
         "styles": [
-          "apps/mfe-profile/src/styles.scss",
-          "apps/mfe-profile/src/tailwind.css"
+          "apps/mfe-profile/src/styles.scss"
         ],
         "polyfills": [
           "es-module-shims"

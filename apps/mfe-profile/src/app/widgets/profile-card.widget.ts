@@ -7,7 +7,7 @@ import { UserStore } from '@mfe/shared/data-access';
   selector: 'prof-profile-card-widget',
   imports: [RouterLink, MatButtonModule],
   encapsulation: ViewEncapsulation.None,
-  styleUrl: '../remote-entry/remote-styles.css',
+  styleUrl: '../app.css',
   host: { class: 'flex h-full flex-col items-start' },
   template: `
     <div class="flex items-center gap-3">

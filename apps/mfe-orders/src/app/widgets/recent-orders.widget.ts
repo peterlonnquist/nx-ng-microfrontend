@@ -9,7 +9,7 @@ import { ORDER_STATUS } from '../order-status';
   selector: 'ord-recent-orders-widget',
   imports: [RouterLink, MatButtonModule],
   encapsulation: ViewEncapsulation.None,
-  styleUrl: '../remote-entry/remote-styles.css',
+  styleUrl: '../app.css',
   template: `
     <ul class="m-0 list-none space-y-3 p-0">
       @for (order of recent(); track order.id) {

@@ -1,4 +1,0 @@
-@import 'tailwindcss' source(none);
-@import '../../../libs/shared/ui/src/styles/tailwind-theme.css';
-@source './';
-@source '../../../libs/shared';
