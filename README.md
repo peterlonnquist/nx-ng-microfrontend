@@ -296,30 +296,40 @@ testar och deployar bara den appen, först till test och efter godkännande till
 från appens produktionstagg. Ändringar i `libs/shared/*` ska ut med shellen innan en remote släpps med dem.
 Varför och hur: [ADR 0001](docs/adr/0001-release-per-app.md).
 
-## Lägga till en ny microfrontend
+## Lägga till en domän eller microfrontend
 
-Allt skapas med Nx-generatorer:
+Fråga först: **ny domän i en befintlig remote, eller en ny remote?** En remote är en deploybar enhet per team,
+inte per domän ([ADR 0002](docs/adr/0002-remote-per-team.md)). Ägs domänen av ett team som redan har en remote
+och släpps i samma takt, lägg den där. Skapa en ny remote bara när den måste släppas oberoende, t.ex. för att
+ett annat team äger den. Namn och URL:er följer domänen, aldrig teamet.
+
+### Ny domän i en befintlig remote
+
+Exempel: domänen `returns` i `mfe-ordering`.
 
 ```bash
-npx nx g @nx/angular:application apps/mfe-reviews --prefix=rev --port=4206 \
-  --tags="type:app,scope:reviews" --bundler=esbuild --style=scss --zoneless \
-  --e2eTestRunner=none --unitTestRunner=vitest-angular
-npx nx g @nx/angular:add-linting --projectName=mfe-reviews --projectRoot=apps/mfe-reviews --prefix=rev
-npx nx g @angular-architects/native-federation:init --project=mfe-reviews --port=4206 --type=remote
+npx nx g @nx/angular:library libs/returns/feature --name=returns-feature \
+  --importPath=@mfe/returns/feature --prefix=returns --tags=type:feature,scope:returns
 ```
 
-Sedan:
+1. **Libbet:** ta bort exempelkomponenten i `src/lib/returns-feature/`. Lägg domänens sidor i libbet och exportera
+   `returnsRoutes` från `src/index.ts`, med en `loadComponent` per sida så att sidorna laddas lazy
+   ([exempel](libs/orders/feature/src/lib/orders.routes.ts)).
+2. **Remoten:** skapa `returns.routes.ts` som lägger domänens routes under remotens `App`
+   ([exempel](apps/mfe-ordering/src/app/orders.routes.ts)), exponera den som `./returns` i
+   `federation.config.mjs` och lägg till `@source '../../../../libs/returns';` i `app.css`, annars saknas
+   libbets Tailwind-klasser. Har remoten hittills haft en enda domän i `app.routes.ts` (`./routes`), låt den
+   vara kvar som den är: shellen i produktion pekar på den.
+3. **Widgets** för domänen läggs i remotens `widgets/`, med id:n som börjar med domänen (`returns.open`).
+4. **Shellen:** `{ path: 'returns', loadChildren: loadRemoteRoutes('mfe-ordering', './returns') }` i
+   [app.routes.ts](apps/shell/src/app/app.routes.ts) och en rad i `layout/navigation.ts`.
+5. **Gränser och ägarskap:** lägg till `scope:returns` i `depConstraints` i `eslint.config.mjs`, och lägg till
+   det i remotens egen regel (`scope:ordering`). Lägg `/libs/returns/` i `CODEOWNERS`.
 
-1. Kopiera mönstret från en befintlig remote: `main.ts`, `app.ts`, `app.css`, `app.routes.ts`, `widgets/` och
-   `mfe-info.ts`. Ta bort det generatorn skapade för att köra appen fristående (`bootstrap.ts`, `app.config.ts`,
-   `tailwind.css` och dess rad i `esbuild.options.styles`). Exponera `./routes` (`app.routes.ts`) och `./widgets`
-   i `federation.config.mjs`, och sätt `test.options.buildTarget` till `mfe-reviews:esbuild:development` i
-   `project.json`.
-2. Lägg till remoten i `apps/shell/public/federation.manifest.json`, `app.routes.ts` och `layout/navigation.ts`.
-3. Lägg till `scope:reviews` i `depConstraints` i `eslint.config.mjs`, en tjänst i `docker-compose.yml`
-   och en rad i `CODEOWNERS`.
+### Ny remote
 
-(Nästa naturliga steg är att samla detta i en egen Nx-generator: `nx g @nx/plugin:generator`.)
+Följ steg-för-steg-guiden [Skapa en ny microfrontend](docs/guides/ny-microfrontend.md): kommandon, filer att ta
+bort, fullständigt innehåll i varje ny fil och exakt vad som ändras i shellen, lint, Docker och CODEOWNERS.
 
 ## Kända saker
 

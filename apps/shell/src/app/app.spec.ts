@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { CartStore } from '@mfe/shared/data-access';
 import { App } from './app';
+import { NAV_ITEMS } from './layout/navigation';
 
 describe('Shell App', () => {
   beforeEach(() => {
@@ -13,7 +14,7 @@ describe('Shell App', () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const links = (fixture.nativeElement as HTMLElement).querySelectorAll('mat-nav-list a');
-    expect(links.length).toBe(7);
+    expect(links.length).toBe(NAV_ITEMS.length);
   });
 
   it('shows the shared cart count in the toolbar badge', async () => {
