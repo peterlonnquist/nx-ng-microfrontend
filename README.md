@@ -257,11 +257,17 @@ Shellen-containern skriver `federation.manifest.json` från `MFE_REMOTE_*`-milj�
 användas i alla miljöer. nginx sätter CORS-headers, `no-cache` på `remoteEntry.json` och `immutable` på
 hashade bundles ([nginx.conf](tools/docker/nginx.conf)).
 
-### CI
+### CI och release
 
-[.github/workflows/ci.yml](.github/workflows/ci.yml) kör `nx affected -t lint test build` och bygger sedan en
-Docker-image **bara för de appar som påverkats**. En ändring i `apps/mfe-cart` ger alltså en ny image för
-enbart cart. En ändring i `libs/shared/*` påverkar alla som använder libbet.
+[.github/workflows/ci.yml](.github/workflows/ci.yml) kör `nx affected -t lint test build` på varje PR och på
+`develop`. Den bygger inga images.
+
+En release gäller **en app** och tas ut som `release/<app>/<version>` från `develop`, till exempel
+`release/mfe-cart/1.4.0`. Release-pipelinen ([release.Jenkinsfile](tools/jenkins/release.Jenkinsfile)) bygger,
+testar och deployar bara den appen, först till test och efter godkännande till produktion. Där taggas
+`<app>@<version>`, och taggarna visar vad som ligger i produktion. Hotfixar tas ut som `hotfix/<app>/<version>`
+från appens produktionstagg. Ändringar i `libs/shared/*` ska ut med shellen innan en remote släpps med dem.
+Varför och hur: [ADR 0001](docs/adr/0001-release-per-app.md).
 
 ## Lägga till en ny microfrontend
 
