@@ -6,8 +6,11 @@
 /apps/shell/            @your-org/team-platform
 /apps/mfe-insights/     @your-org/team-insights
 /apps/mfe-products/     @your-org/team-catalog
-/apps/mfe-cart/         @your-org/team-checkout
-/apps/mfe-orders/       @your-org/team-fulfillment
+/apps/mfe-ordering/     @your-org/team-checkout
+
+# Domains are owned per lib, whichever remote hosts them.
+/libs/cart/             @your-org/team-checkout
+/libs/orders/           @your-org/team-checkout
 /apps/mfe-profile/      @your-org/team-identity
 
 /apps/layout-api/       @your-org/team-platform

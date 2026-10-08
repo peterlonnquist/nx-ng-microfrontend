@@ -1,0 +1,16 @@
+{
+  "name": "orders-feature",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/orders/feature/src",
+  "prefix": "orders",
+  "projectType": "library",
+  "tags": [
+    "type:feature",
+    "scope:orders"
+  ],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

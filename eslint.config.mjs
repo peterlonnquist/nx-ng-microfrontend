@@ -34,6 +34,8 @@ export default [
                         { sourceTag: "scope:products", onlyDependOnLibsWithTags: ["scope:shared", "scope:products"] },
                         { sourceTag: "scope:cart", onlyDependOnLibsWithTags: ["scope:shared", "scope:cart"] },
                         { sourceTag: "scope:orders", onlyDependOnLibsWithTags: ["scope:shared", "scope:orders"] },
+                        // A remote hosting several domains may use each of them; the domains still may not use each other.
+                        { sourceTag: "scope:ordering", onlyDependOnLibsWithTags: ["scope:shared", "scope:cart", "scope:orders"] },
                         { sourceTag: "scope:profile", onlyDependOnLibsWithTags: ["scope:shared", "scope:profile"] },
                         { sourceTag: "scope:layout-api", onlyDependOnLibsWithTags: ["scope:shared"] },
                         // Layering: ui/data-access build on util, util depends on nothing.

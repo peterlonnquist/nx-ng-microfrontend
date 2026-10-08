@@ -17,8 +17,7 @@ men utvecklar i **ett** monorepo där allt startar med ett kommando.
 | `shell` (host) | Team Platform | `/` (dashboard), `/admin` | 4200 | 8080 |
 | `mfe-insights` | Team Insights | `/insights` | 4201 | 8091 |
 | `mfe-products` | Team Catalog | `/products` | 4202 | 8092 |
-| `mfe-cart` | Team Checkout | `/cart` | 4203 | 8093 |
-| `mfe-orders` | Team Fulfillment | `/orders` | 4204 | 8094 |
+| `mfe-ordering` | Team Checkout | `/cart`, `/orders` | 4203 | 8093 |
 | `mfe-profile` | Team Identity | `/profile` | 4205 | 8095 |
 | `layout-api` (Node) | Team Platform | `/api/*` via shellen | 3333 | intern |
 
@@ -75,16 +74,18 @@ apps/
     public/federation.manifest.json   # remote-namn → URL (skrivs över i Docker)
     src/app/dashboard/       # Widget-registry, layout-store, dashboard-sida
     src/app/admin/           # Adminsida: drag & drop-editor för dashboarden
-  mfe-<domän>/               # En deploybar enhet per team
+  mfe-<namn>/                # En deploybar enhet per team (inte per domän)
     federation.config.mjs    # vad appen exponerar och delar
     src/app/
-      app.routes.ts          # Exponeras som ./routes, shellen mountar dem under teamets prefix
+      app.routes.ts          # En domän: exponeras som ./routes, shellen mountar dem under domänens prefix
+      <domän>.routes.ts      # Flera domäner: en route-modul per domän, exponeras som ./<domän>
       app.ts, app.css        # Rot-komponent: MFE-gräns + teamets Tailwind-utilities
       widgets/               # Exponeras som ./widgets: katalog + widget-komponenter
       mfe-info.ts            # namn/team/version (visas i UI:t)
-      *.ts                   # teamets egna features
+      *.ts                   # teamets egna features (när remoten bara har en domän)
   layout-api/                # Node-tjänst som sparar dashboard-layouten (Team Platform)
 libs/
+  <domän>/feature/           # En domäns sidor och routes när remoten har flera domäner (t.ex. cart, orders)
   shared/
     ui/                      # Presentationskomponenter + Material-tema + Tailwind-brygga
     data-access/             # Signal-stores som delas som singletons (varukorg, ordrar, användare)
@@ -114,22 +115,49 @@ flowchart LR
   S -->|2. federation.manifest.json| S
   S -->|3. remoteEntry.json + ES-moduler vid navigering| I[mfe-insights]
   S --> P[mfe-products]
-  S --> C[mfe-cart]
-  S --> O[mfe-orders]
+  S -->|/cart, /orders| O[mfe-ordering]
   S --> U[mfe-profile]
   S -->|/api/layout| L[layout-api]
 ```
 
 1. **Shellen** kör `initFederation('federation.manifest.json')` i [main.ts](apps/shell/src/main.ts).
    Manifestet hämtas vid runtime, så samma build kan peka på olika remote-URL:er i olika miljöer.
-2. Varje remote **exponerar `./routes`**
-   från sin `app.routes.ts` ([exempel](apps/mfe-cart/src/app/app.routes.ts)). Shellen mountar dem med
-   `loadChildren: loadRemoteRoutes('mfe-cart')` i [app.routes.ts](apps/shell/src/app/app.routes.ts).
-   Teamet äger allt under sitt URL-prefix, inklusive egna underroutes (`/products/:id`).
+2. Varje remote **exponerar sina routes**, `./routes` från sin `app.routes.ts`
+   ([exempel](apps/mfe-products/src/app/app.routes.ts)). Shellen mountar dem med
+   `loadChildren: loadRemoteRoutes('mfe-products')` i [app.routes.ts](apps/shell/src/app/app.routes.ts).
+   Teamet äger allt under domänens URL-prefix, inklusive egna underroutes (`/products/:id`).
+   En remote med flera domäner exponerar en route-modul per domän, se
+   [En remote, flera domäner](#en-remote-flera-domäner).
 3. **Om en remote är nere** visar shellen en fallback för just den delen, och resten fungerar
    ([native-federation.ts](apps/shell/src/app/federation/native-federation.ts)).
 4. **Delade beroenden** (Angular, Material, RxJS, och alla `@mfe/shared/*`-libs via path mappings i
    `tsconfig.base.json`) laddas **en gång** som singletons.
+
+### En remote, flera domäner
+
+En remote är en **deploybar enhet per team**, inte per domän. Ett team som äger flera domäner och släpper dem
+tillsammans har en remote. Varje remote kostar en image, en deployment och en version att hålla reda på, så
+den delas bara när delarna behöver släppas oberoende av varandra, t.ex. för att de ägs av olika team.
+
+[mfe-ordering](apps/mfe-ordering) visar hur det ser ut. Den äger domänerna varukorg och ordrar:
+
+```
+apps/mfe-ordering/src/app/
+  cart.routes.ts       # exponeras som ./cart:   App + cartRoutes
+  orders.routes.ts     # exponeras som ./orders: App + ordersRoutes
+  app.ts, app.css      # MFE-gräns + Tailwind för båda domänerna (@source pekar på libs/cart och libs/orders)
+  widgets/             # cart.summary, orders.recent
+libs/cart/feature/     # varukorgens sidor och routes (scope:cart)
+libs/orders/feature/   # ordrarnas sidor, routes och orderstatus (scope:orders)
+```
+
+- **URL:erna följer domänerna**, inte remoten eller teamet. Shellen mountar varje domän för sig:
+  `loadRemoteRoutes('mfe-ordering', './cart')` under `/cart` och `'./orders'` under `/orders`.
+- **Domänerna ligger i libs** med egna `scope:`-taggar. Lint stoppar dem från att importera varandra, även
+  inom samma remote. Bara remoten (`scope:ordering`) får använda båda.
+- **En domän kan flyttas** till en annan remote om den byter team: den nya remoten importerar libbet och
+  exponerar dess routes, och shellen byter remote-namn på en rad. Widget-id:n (`orders.recent`) följer med
+  och ändras aldrig.
 
 ### Kommunikation mellan microfrontends
 
@@ -151,7 +179,7 @@ flowchart LR
   tokens: `bg-primary`, `bg-surface-container`, `text-on-surface-variant` osv. följer temat automatiskt.
 - **Viktigt för microfrontends:** en remotes *globala* stilar följer inte med in i shellen, bara komponentstilar
   gör det. Därför bär varje remotes rot-komponent, `App`, sina egna Tailwind-utilities
-  ([app.css](apps/mfe-cart/src/app/app.css), `ViewEncapsulation.None`).
+  ([app.css](apps/mfe-products/src/app/app.css), `ViewEncapsulation.None`).
   Shellen behöver aldrig veta vilka klasser en remote använder, så deployer förblir oberoende.
 - Tailwind ligger i CSS cascade layers och Material inte. Vill du **skriva över** en Material-stil med
   Tailwind behöver du `!`-prefix, t.ex. `class="!w-64"`.
@@ -165,8 +193,8 @@ shellen byggs om.
 ```mermaid
 flowchart LR
   subgraph Remotes
-    R1["mfe-orders<br/>exposes ./widgets"]
-    R2["mfe-cart<br/>exposes ./widgets"]
+    R1["mfe-ordering<br/>exposes ./widgets"]
+    R2["mfe-products<br/>exposes ./widgets"]
     R3["…"]
   end
   REG[WidgetRegistry<br/>i shellen] -->|loadRemoteModule per remote i manifestet| R1 & R2 & R3
@@ -177,7 +205,7 @@ flowchart LR
 ```
 
 1. **Teamet publicerar.** Varje remote exponerar `./widgets`
-   ([exempel](apps/mfe-orders/src/app/widgets/index.ts)): en lista med id, titel, beskrivning, ikon,
+   ([exempel](apps/mfe-ordering/src/app/widgets/index.ts)): en lista med id, titel, beskrivning, ikon,
    standardstorlek och `load()` som lazy-laddar komponenten. Kontraktet (`WidgetDefinition`) ligger i
    [@mfe/shared/ui](libs/shared/ui/src/lib/widgets/widget-definition.ts).
 2. **Shellen upptäcker.** [WidgetRegistry](apps/shell/src/app/dashboard/widget-registry.ts) laddar `./widgets`
@@ -228,17 +256,18 @@ open http://localhost:8080
 **Demo 1: deploya bara ett team**
 
 ```bash
-# ändra version: '1.0.0' → '1.1.0' i apps/mfe-cart/src/app/mfe-info.ts
-docker compose up -d --build mfe-cart
+# ändra version: '1.0.0' → '1.1.0' i apps/mfe-ordering/src/app/mfe-info.ts
+docker compose up -d --build mfe-ordering
 ```
 
-Ladda om shellen: Cart visar v1.1.0, alla andra är orörda (kolla `docker compose ps`, bara cart har startats om).
+Ladda om shellen: varukorgen och ordrarna visar v1.1.0, alla andra är orörda (kolla `docker compose ps`, bara
+mfe-ordering har startats om).
 
 **Demo 2: en remote går ner**
 
 ```bash
-docker compose stop mfe-orders    # /orders och orders-widgeten visar fallback, resten fungerar
-docker compose start mfe-orders
+docker compose stop mfe-ordering  # /cart, /orders och deras widgets visar fallback, resten fungerar
+docker compose start mfe-ordering
 docker compose stop layout-api    # dashboarden visar alla widgets i standardstorlek
 docker compose start layout-api
 ```
@@ -246,8 +275,8 @@ docker compose start layout-api
 **Demo 3: hybrid, lokal dev-server i den "deployade" miljön**
 
 ```bash
-npx nx serve mfe-cart
-MFE_CART_URL=http://localhost:4203/remoteEntry.json docker compose up -d shell
+npx nx serve mfe-ordering
+MFE_ORDERING_URL=http://localhost:4203/remoteEntry.json docker compose up -d shell
 ```
 
 Shellen-containern skriver `federation.manifest.json` från `MFE_REMOTE_*`-miljövariabler vid start
@@ -261,7 +290,7 @@ hashade bundles ([nginx.conf](tools/docker/nginx.conf)).
 `develop`. Den bygger inga images.
 
 En release gäller **en app** och tas ut som `release/<app>/<version>` från `develop`, till exempel
-`release/mfe-cart/1.4.0`. Release-pipelinen ([release.Jenkinsfile](tools/jenkins/release.Jenkinsfile)) bygger,
+`release/mfe-ordering/1.4.0`. Release-pipelinen ([release.Jenkinsfile](tools/jenkins/release.Jenkinsfile)) bygger,
 testar och deployar bara den appen, först till test och efter godkännande till produktion. Där taggas
 `<app>@<version>`, och taggarna visar vad som ligger i produktion. Hotfixar tas ut som `hotfix/<app>/<version>`
 från appens produktionstagg. Ändringar i `libs/shared/*` ska ut med shellen innan en remote släpps med dem.

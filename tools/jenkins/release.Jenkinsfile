@@ -1,7 +1,7 @@
 // Release of ONE app from a release or hotfix branch (docs/adr/0001-release-per-app.md).
 //
-//   release/<app>/<version>   cut from develop, e.g. release/mfe-cart/1.4.0
-//   hotfix/<app>/<version>    cut from the app's production tag, e.g. hotfix/mfe-cart/1.4.1 from mfe-cart@1.4.0
+//   release/<app>/<version>   cut from develop, e.g. release/mfe-ordering/1.4.0
+//   hotfix/<app>/<version>    cut from the app's production tag, e.g. hotfix/mfe-ordering/1.4.1 from mfe-ordering@1.4.0
 //
 // Jenkins setup: a Multibranch Pipeline job on this repo with "Script Path" = tools/jenkins/release.Jenkinsfile and
 // a branch filter for `release/* hotfix/*`. Only the app named in the branch is built and deployed; the rest of the

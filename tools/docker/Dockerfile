@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 #
 # One Dockerfile for every app – each still gets its own image and can be deployed on its own:
-#   docker build -f tools/docker/Dockerfile --target web --build-arg APP=mfe-cart   -t mfe-store/mfe-cart .
+#   docker build -f tools/docker/Dockerfile --target web --build-arg APP=mfe-ordering -t mfe-store/mfe-ordering .
 #   docker build -f tools/docker/Dockerfile --target api --build-arg APP=layout-api -t mfe-store/layout-api .
 
 # ---- deps: identical for all apps, so the layer is shared/cached between images -------------------
@@ -15,7 +15,7 @@ FROM deps AS build
 ARG APP
 ENV NX_DAEMON=false NX_NO_CLOUD=true NX_TUI=false CI=true
 COPY . .
-RUN test -n "$APP" || (echo "Build arg APP is required, e.g. --build-arg APP=mfe-cart" && exit 1)
+RUN test -n "$APP" || (echo "Build arg APP is required, e.g. --build-arg APP=mfe-ordering" && exit 1)
 RUN npx nx build "$APP" --configuration=production
 
 # ---- api: Node services (layout-api) ---------------------------------------------------------------

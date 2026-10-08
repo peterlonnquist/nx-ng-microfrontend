@@ -1,13 +1,13 @@
 # Every app is its own container = its own deployable unit.
 #
 #   docker compose up --build -d              # build and start everything
-#   docker compose up --build -d mfe-cart     # redeploy ONLY the cart – the others keep running untouched
-#   docker compose stop mfe-orders            # simulate an outage – the shell shows fallbacks for orders
+#   docker compose up --build -d mfe-ordering # redeploy ONLY cart + orders – the others keep running untouched
+#   docker compose stop mfe-ordering          # simulate an outage – the shell shows fallbacks for cart and orders
 #   docker compose stop layout-api            # dashboard degrades to "all widgets, default size"
 #
 # Remote URLs are what the *browser* uses, hence localhost + the published port.
 # Override any of them to mix local dev servers with containers, e.g.:
-#   MFE_CART_URL=http://localhost:4203/remoteEntry.json docker compose up -d shell
+#   MFE_ORDERING_URL=http://localhost:4203/remoteEntry.json docker compose up -d shell
 
 x-web: &web
   build: &web-build
@@ -30,8 +30,7 @@ services:
     environment:
       MFE_REMOTE_MFE_INSIGHTS: ${MFE_INSIGHTS_URL:-http://localhost:8091/remoteEntry.json}
       MFE_REMOTE_MFE_PRODUCTS: ${MFE_PRODUCTS_URL:-http://localhost:8092/remoteEntry.json}
-      MFE_REMOTE_MFE_CART: ${MFE_CART_URL:-http://localhost:8093/remoteEntry.json}
-      MFE_REMOTE_MFE_ORDERS: ${MFE_ORDERS_URL:-http://localhost:8094/remoteEntry.json}
+      MFE_REMOTE_MFE_ORDERING: ${MFE_ORDERING_URL:-http://localhost:8093/remoteEntry.json}
       MFE_REMOTE_MFE_PROFILE: ${MFE_PROFILE_URL:-http://localhost:8095/remoteEntry.json}
       # Server-side (container network) – the browser only ever calls same-origin /api/...
       API_UPSTREAM: http://layout-api:3333
@@ -48,17 +47,12 @@ services:
     image: mfe-store/mfe-products:latest
     ports: ['8092:80']
 
-  mfe-cart:
+  # Hosts two domains (cart, orders) owned by the same team: one image, one deployment.
+  mfe-ordering:
     <<: *web
-    build: { <<: *web-build, args: { APP: mfe-cart } }
-    image: mfe-store/mfe-cart:latest
+    build: { <<: *web-build, args: { APP: mfe-ordering } }
+    image: mfe-store/mfe-ordering:latest
     ports: ['8093:80']
-
-  mfe-orders:
-    <<: *web
-    build: { <<: *web-build, args: { APP: mfe-orders } }
-    image: mfe-store/mfe-orders:latest
-    ports: ['8094:80']
 
   mfe-profile:
     <<: *web

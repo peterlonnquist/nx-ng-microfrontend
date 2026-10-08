@@ -5,10 +5,10 @@ Microfrontend PoC: Nx 23 monorepo, Angular 22 (zoneless, standalone, signals), N
 ## Working in this repo
 
 - Run every task through Nx (`npx nx <target> <project>`, `npx nx run-many`, `npx nx affected`) and scaffold with Nx generators.
-- Respect team boundaries: a remote imports only `@mfe/shared/*` and its own code. Remotes talk through shared stores (`@mfe/shared/data-access`), `publishMfeEvent`, or plain router URLs. `nx lint` enforces this via project tags.
+- Respect team boundaries: a remote imports only `@mfe/shared/*`, the domain libs it hosts (`libs/<domain>/*`) and its own code. Domains never import each other, even inside one remote. Remotes talk through shared stores (`@mfe/shared/data-access`), `publishMfeEvent`, or plain router URLs. `nx lint` enforces this via project tags.
 - `libs/shared/*` are federated singletons: the shell's copy wins at runtime, so keep their public API backwards compatible.
 - In `apps/shell/src/main.ts`, import only `@angular-architects/native-federation` before `initFederation` resolves; Angular loads later via `bootstrap.ts`.
-- Remotes run only inside the shell. A remote exposes `./routes` from `app.routes.ts` (export name `routes`, the contract with the shell) and `./widgets`; its `main.ts` is only the build entry and bootstraps nothing.
+- Remotes run only inside the shell. A remote is a deployment unit per team, not per domain. With one domain it exposes `./routes` from `app.routes.ts`; with several it exposes `./<domain>` from `<domain>.routes.ts` per domain, and the domain code lives in `libs/<domain>/feature`. Every route module exports `routes` (the contract with the shell). Each remote also exposes `./widgets`; its `main.ts` is only the build entry and bootstraps nothing.
 - Keep NF's default shared bundling in `federation.config.mjs`; `build: 'package'` races in the cache dir and breaks parallel builds.
 
 ## Styling

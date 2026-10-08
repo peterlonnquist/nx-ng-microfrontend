@@ -1,0 +1,16 @@
+{
+  "name": "cart-feature",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/cart/feature/src",
+  "prefix": "cart",
+  "projectType": "library",
+  "tags": [
+    "type:feature",
+    "scope:cart"
+  ],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

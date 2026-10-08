@@ -12,8 +12,9 @@ export const appRoutes: Route[] = [
   { path: 'admin', loadComponent: () => import('./admin/dashboard-editor').then((m) => m.DashboardEditor) },
   { path: 'insights', loadChildren: loadRemoteRoutes('mfe-insights') },
   { path: 'products', loadChildren: loadRemoteRoutes('mfe-products') },
-  { path: 'cart', loadChildren: loadRemoteRoutes('mfe-cart') },
-  { path: 'orders', loadChildren: loadRemoteRoutes('mfe-orders') },
+  // One remote can host several domains: it exposes a route module per domain, the shell owns the URLs.
+  { path: 'cart', loadChildren: loadRemoteRoutes('mfe-ordering', './cart') },
+  { path: 'orders', loadChildren: loadRemoteRoutes('mfe-ordering', './orders') },
   { path: 'profile', loadChildren: loadRemoteRoutes('mfe-profile') },
   { path: '**', component: NotFound },
 ];

@@ -2,7 +2,7 @@
 # Writes federation.manifest.json from environment variables at container start, so the *same* shell image
 # can point at different remote URLs per environment – no rebuild needed when a remote moves.
 #
-#   MFE_REMOTE_MFE_CART=https://cart.example.com/remoteEntry.json  ->  "mfe-cart": "https://cart..."
+#   MFE_REMOTE_MFE_ORDERING=https://ordering.example.com/remoteEntry.json  ->  "mfe-ordering": "https://ordering..."
 #
 # Only runs when at least one MFE_REMOTE_* variable is set (i.e. in the shell container).
 set -eu

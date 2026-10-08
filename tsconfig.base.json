@@ -25,6 +25,12 @@
       ],
       "@mfe/shared/util": [
         "./libs/shared/util/src/index.ts"
+      ],
+      "@mfe/cart/feature": [
+        "./libs/cart/feature/src/index.ts"
+      ],
+      "@mfe/orders/feature": [
+        "./libs/orders/feature/src/index.ts"
       ]
     }
   },

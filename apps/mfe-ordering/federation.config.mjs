@@ -1,0 +1,38 @@
+import { withNativeFederation, fromPackageJson } from '@angular-architects/native-federation/config';
+
+export default withNativeFederation({
+  name: 'mfe-ordering',
+
+
+
+  exposes: {
+    // One route module per domain, so the shell keeps one URL prefix per domain.
+    './cart': './apps/mfe-ordering/src/app/cart.routes.ts',
+    './orders': './apps/mfe-ordering/src/app/orders.routes.ts',
+    './widgets': './apps/mfe-ordering/src/app/widgets/index.ts',
+  },
+
+  shared: fromPackageJson({ singleton: true, strictVersion: true, requiredVersion: 'auto' })
+    // includeSecondaries is an opt-out of ignoreUnusedDeps, so all of
+    // @angular/core is shared to prevent mismatches.
+    .patch(['@angular/core'], { includeSecondaries: { keepAll: true } }),
+
+  skip: [
+    'rxjs/ajax',
+    'rxjs/fetch',
+    'rxjs/testing',
+    'rxjs/webSocket',
+    // Add further packages you don't need at runtime
+  ],
+
+  // Please read our FAQ about sharing libs:
+  // https://shorturl.at/jmzH0
+
+  features: {
+    // ignoreUnusedDeps is enabled by default now
+    // ignoreUnusedDeps: true,
+
+    // Opt-in: groups chunks in remoteEntry.json for smaller metadata file
+    denseChunking: true
+  }
+});
