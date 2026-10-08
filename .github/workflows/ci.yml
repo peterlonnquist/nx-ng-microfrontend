@@ -1,11 +1,11 @@
-# Verify what changed: lint, test and build of every affected project, on PRs and on develop.
+# Verify what changed: lint, test and build of every affected project, on PRs and on develop (main until develop exists).
 # Images are built and deployed only by the release pipeline, one app per release branch
 # (docs/adr/0001-release-per-app.md, tools/jenkins/release.Jenkinsfile).
 name: CI
 
 on:
   push:
-    branches: [develop]
+    branches: [develop, main]
   pull_request:
 
 env:
@@ -26,7 +26,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # On a push, compare with the last green commit of the pushed branch. PRs compare with their base anyway.
       - uses: nrwl/nx-set-shas@v4
         with:
-          main-branch-name: develop
+          main-branch-name: ${{ github.ref_name }}
       - run: npx nx affected -t lint test build
