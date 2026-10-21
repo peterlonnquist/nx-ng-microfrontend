@@ -10,3 +10,5 @@ coverage
 __screenshots__/
 
 vitest.config.*.timestamp*
+# Shared editor settings (overrides a global ignore of .vscode)
+!.vscode/
